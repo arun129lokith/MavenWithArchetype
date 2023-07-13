@@ -21,6 +21,7 @@ public class AuthenticationDaoImpl implements AuthenticationDao {
 
     private static AuthenticationDaoImpl authenticationDaoImpl;
     private final DataBaseConnectionPool connectionPool;
+    private Connection connection = null;
 
     private AuthenticationDaoImpl() {
         connectionPool = DataBaseConnectionPool.getInstance();
@@ -48,20 +49,38 @@ public class AuthenticationDaoImpl implements AuthenticationDao {
     public boolean signUp(final User user) {
         final String query = "INSERT INTO USERS (NAME, MOBILE_NUMBER, EMAIL, PASSWORD) VALUES (?,?,?,?)";
 
-        try (final Connection connection = connectionPool.get();
-             final PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+        try {
+            connection = connectionPool.get();
 
-            preparedStatement.setString(1, user.getName());
-            preparedStatement.setString(2, user.getMobileNumber());
-            preparedStatement.setString(3, user.getEmail());
-            preparedStatement.setString(4, user.getPassword());
+            connection.setAutoCommit(false);
 
-            preparedStatement.executeUpdate();
-            connectionPool.releaseConnection(connection);
+            try (final PreparedStatement preparedStatement = connection.prepareStatement(query)) {
 
-            return true;
-        } catch (final InterruptedException | SQLException message) {
-            System.out.println(message.getMessage());
+                preparedStatement.setString(1, user.getName());
+                preparedStatement.setString(2, user.getMobileNumber());
+                preparedStatement.setString(3, user.getEmail());
+                preparedStatement.setString(4, user.getPassword());
+
+                preparedStatement.executeUpdate();
+                connection.commit();
+                connectionPool.releaseConnection(connection);
+
+                return true;
+            } catch (final SQLException message) {
+                connection.rollback();
+            }
+        } catch (final SQLException | InterruptedException message) {
+            message.printStackTrace();
+        } finally {
+            if (null != connection) {
+
+                try {
+                    connection.setAutoCommit(true);
+                    connection.close();
+                } catch (final SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
         return false;
@@ -77,18 +96,36 @@ public class AuthenticationDaoImpl implements AuthenticationDao {
     public boolean isMobileNumberExist(final User user) {
         final String query = "SELECT * FROM USERS WHERE MOBILE_NUMBER = ? AND PASSWORD = ?";
 
-        try (final Connection connection = connectionPool.get();
-             final PreparedStatement checkStatement = connection.prepareStatement(query)) {
+        try {
+            connection = connectionPool.get();
 
-            checkStatement.setString(1, user.getMobileNumber());
-            checkStatement.setString(2, user.getPassword());
-            final ResultSet resultSet = checkStatement.executeQuery();
+            connection.setAutoCommit(false);
 
-            connectionPool.releaseConnection(connection);
+            try (final PreparedStatement checkStatement = connection.prepareStatement(query)) {
 
-            return resultSet.next();
+                checkStatement.setString(1, user.getMobileNumber());
+                checkStatement.setString(2, user.getPassword());
+                final ResultSet resultSet = checkStatement.executeQuery();
+
+                connection.commit();
+                connectionPool.releaseConnection(connection);
+
+                return resultSet.next();
+            } catch (final SQLException message) {
+                connection.rollback();
+            }
         } catch (final SQLException | InterruptedException message) {
-            System.out.println(message.getMessage());
+            message.printStackTrace();
+        } finally {
+            if (null != connection) {
+
+                try {
+                    connection.setAutoCommit(true);
+                    connection.close();
+                } catch (final SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
         return false;
@@ -104,18 +141,36 @@ public class AuthenticationDaoImpl implements AuthenticationDao {
     public boolean isEmailExist(final User user) {
         final String query = "SELECT * FROM USERS WHERE EMAIL = ? AND PASSWORD = ?";
 
-        try (final Connection connection = connectionPool.get();
-             final PreparedStatement checkStatement = connection.prepareStatement(query)) {
+        try {
+            connection = connectionPool.get();
 
-            checkStatement.setString(1, user.getEmail());
-            checkStatement.setString(2, user.getPassword());
-            final ResultSet resultSet = checkStatement.executeQuery();
+            connection.setAutoCommit(false);
 
-            connectionPool.releaseConnection(connection);
+            try (final PreparedStatement checkStatement = connection.prepareStatement(query)) {
 
-            return resultSet.next();
+                checkStatement.setString(1, user.getEmail());
+                checkStatement.setString(2, user.getPassword());
+                final ResultSet resultSet = checkStatement.executeQuery();
+
+                connection.commit();
+                connectionPool.releaseConnection(connection);
+
+                return resultSet.next();
+            } catch (final SQLException message) {
+                connection.rollback();
+            }
         } catch (final SQLException | InterruptedException message) {
-            System.out.println(message.getMessage());
+            message.printStackTrace();
+        } finally {
+            if (null != connection) {
+
+                try {
+                    connection.setAutoCommit(true);
+                    connection.close();
+                } catch (final SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
         return false;

@@ -2,6 +2,7 @@ package com.instagram.service;
 
 import com.instagram.model.User;
 
+import java.sql.SQLException;
 import java.util.Collection;
 
 /**
