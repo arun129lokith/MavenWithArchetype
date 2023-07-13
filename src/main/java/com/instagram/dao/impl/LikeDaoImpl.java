@@ -25,6 +25,7 @@ public class LikeDaoImpl implements LikeDao {
 
     private static LikeDaoImpl likeDaoImpl;
     private final DataBaseConnectionPool connectionPool;
+    private Connection connection = null;
 
     private LikeDaoImpl() {
         connectionPool = DataBaseConnectionPool.getInstance();
@@ -50,15 +51,33 @@ public class LikeDaoImpl implements LikeDao {
     public void likePost(final Like like) {
         final String query = "INSERT INTO LIKES (POST_ID, USER_ID) VALUES (?, ?)";
 
-        try (final Connection connection = connectionPool.get();
-             final PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            preparedStatement.setLong(1, like.getPostId());
-            preparedStatement.setLong(2, like.getUserId());
+        try {
+            connection = connectionPool.get();
 
-            preparedStatement.executeUpdate();
-            connectionPool.releaseConnection(connection);
+            connection.setAutoCommit(false);
+
+            try (final PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                preparedStatement.setLong(1, like.getPostId());
+                preparedStatement.setLong(2, like.getUserId());
+
+                preparedStatement.executeUpdate();
+                connection.commit();
+                connectionPool.releaseConnection(connection);
+            } catch (final SQLException message) {
+                connection.rollback();
+            }
         } catch (final SQLException | InterruptedException message) {
-            System.out.println(message.getMessage());
+            message.printStackTrace();
+        } finally {
+            if (null != connection) {
+
+                try {
+                    connection.setAutoCommit(true);
+                    connection.close();
+                } catch (final SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
@@ -72,17 +91,36 @@ public class LikeDaoImpl implements LikeDao {
     public boolean unlikePost(final Long id) {
         final String query = "DELETE FROM LIKES WHERE ID = ?";
 
-        try (final Connection connection = connectionPool.get();
-             final PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+        try {
+            connection = connectionPool.get();
 
-            preparedStatement.setLong(1, id);
-            connectionPool.releaseConnection(connection);
+            connection.setAutoCommit(false);
 
-            if (0 < preparedStatement.executeUpdate()) {
-                return true;
+            try (final PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+
+                preparedStatement.setLong(1, id);
+
+                connection.commit();
+                connectionPool.releaseConnection(connection);
+
+                if (0 < preparedStatement.executeUpdate()) {
+                    return true;
+                }
+            } catch (final SQLException message) {
+                connection.rollback();
             }
         } catch (final SQLException | InterruptedException message) {
-            System.out.println(message.getMessage());
+            message.printStackTrace();
+        } finally {
+            if (null != connection) {
+
+                try {
+                    connection.setAutoCommit(true);
+                    connection.close();
+                } catch (final SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
         return false;
@@ -99,21 +137,39 @@ public class LikeDaoImpl implements LikeDao {
         final Collection<User> users = new ArrayList<>();
         final String query = "SELECT U.NAME FROM USERS AS U INNER JOIN LIKES AS L ON U.ID = L.USER_ID WHERE L.POST_ID = ?";
 
-        try (final Connection connection = connectionPool.get();
-             final PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+        try {
+            connection = connectionPool.get();
 
-            preparedStatement.setLong(1, postId);
-            final ResultSet resultSet = preparedStatement.executeQuery();
+            connection.setAutoCommit(false);
 
-            while (resultSet.next()) {
-                final User user = new User();
+            try (final PreparedStatement preparedStatement = connection.prepareStatement(query)) {
 
-                user.setName(resultSet.getString("NAME"));
-                users.add(user);
+                preparedStatement.setLong(1, postId);
+                final ResultSet resultSet = preparedStatement.executeQuery();
+
+                while (resultSet.next()) {
+                    final User user = new User();
+
+                    user.setName(resultSet.getString("NAME"));
+                    users.add(user);
+                }
+                connection.commit();
+                connectionPool.releaseConnection(connection);
+            } catch (final SQLException message) {
+                connection.rollback();
             }
-            connectionPool.releaseConnection(connection);
         } catch (final SQLException | InterruptedException message) {
-            System.out.println(message.getMessage());
+            message.printStackTrace();
+        } finally {
+            if (null != connection) {
+
+                try {
+                    connection.setAutoCommit(true);
+                    connection.close();
+                } catch (final SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
         return users;
@@ -129,19 +185,37 @@ public class LikeDaoImpl implements LikeDao {
     public Long getLikeCount(final Long postId) {
         final String query = "SELECT COUNT(POST_ID) AS LIKE_COUNT FROM LIKES WHERE POST_ID = ? GROUP BY POST_ID";
 
-        try (final Connection connection = connectionPool.get();
-             final PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+        try {
+            connection = connectionPool.get();
 
-            preparedStatement.setLong(1, postId);
-            final ResultSet resultSet = preparedStatement.executeQuery();
+            connection.setAutoCommit(false);
 
-            connectionPool.releaseConnection(connection);
+            try (final PreparedStatement preparedStatement = connection.prepareStatement(query)) {
 
-            if (resultSet.next()) {
-                return resultSet.getLong("LIKE_COUNT");
+                preparedStatement.setLong(1, postId);
+                final ResultSet resultSet = preparedStatement.executeQuery();
+
+                connection.commit();
+                connectionPool.releaseConnection(connection);
+
+                if (resultSet.next()) {
+                    return resultSet.getLong("LIKE_COUNT");
+                }
+            } catch (final SQLException message) {
+                connection.rollback();
             }
         } catch (final SQLException | InterruptedException message) {
-            System.out.println(message.getMessage());
+            message.printStackTrace();
+        } finally {
+            if (null != connection) {
+
+                try {
+                    connection.setAutoCommit(true);
+                    connection.close();
+                } catch (final SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
         return null;
