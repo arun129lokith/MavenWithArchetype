@@ -4,7 +4,7 @@ import java.util.Scanner;
 
 /**
  * <p>
- * Creates an instance of scanner in single time only
+ * Creates an object of scanner in single time only
  * </p>
  *
  * @author Arun

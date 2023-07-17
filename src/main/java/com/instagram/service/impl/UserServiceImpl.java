@@ -41,7 +41,7 @@ public class UserServiceImpl extends AuthenticationServiceImpl implements UserSe
      */
     @Override
     public User getUser(final Long id) {
-        return users.containsKey(id) ? users.get(id) : null;
+        return USERS.containsKey(id) ? USERS.get(id) : null;
     }
 
     /**
@@ -51,7 +51,7 @@ public class UserServiceImpl extends AuthenticationServiceImpl implements UserSe
      */
     @Override
     public Collection<User> getAllUsers() {
-        return users.values();
+        return USERS.values();
     }
 
     /**
@@ -62,7 +62,7 @@ public class UserServiceImpl extends AuthenticationServiceImpl implements UserSe
      */
     @Override
     public boolean update(final User user) {
-        users.put(user.getId(), user);
+        USERS.put(user.getId(), user);
         return true;
     }
 
@@ -74,8 +74,8 @@ public class UserServiceImpl extends AuthenticationServiceImpl implements UserSe
      */
     @Override
     public boolean delete(final Long id) {
-        if (users.containsKey(id)) {
-            users.remove(id);
+        if (USERS.containsKey(id)) {
+            USERS.remove(id);
 
             return true;
         }
@@ -91,7 +91,7 @@ public class UserServiceImpl extends AuthenticationServiceImpl implements UserSe
      */
     @Override
     public Long getId(final User user) {
-        for (final Map.Entry<Long, User> entry : users.entrySet()) {
+        for (final Map.Entry<Long, User> entry : USERS.entrySet()) {
             final User existingUser = entry.getValue();
 
             if (existingUser.getEmail().equals(user.getEmail())
@@ -111,7 +111,7 @@ public class UserServiceImpl extends AuthenticationServiceImpl implements UserSe
      */
     @Override
     public boolean isNameExist(final String name) {
-        for (final User existingUser : users.values()) {
+        for (final User existingUser : USERS.values()) {
 
             return existingUser.getName().equals(name);
         }
@@ -127,7 +127,7 @@ public class UserServiceImpl extends AuthenticationServiceImpl implements UserSe
      */
     @Override
     public boolean isEmailExist(final String email) {
-        for (final User existingUser : users.values()) {
+        for (final User existingUser : USERS.values()) {
 
             return existingUser.getEmail().equals(email);
         }
@@ -143,7 +143,7 @@ public class UserServiceImpl extends AuthenticationServiceImpl implements UserSe
      */
     @Override
     public boolean isMobileNumberExist(final String mobileNumber) {
-        for (final User existingUser : users.values()) {
+        for (final User existingUser : USERS.values()) {
 
             return existingUser.getMobileNumber().equals(mobileNumber);
         }

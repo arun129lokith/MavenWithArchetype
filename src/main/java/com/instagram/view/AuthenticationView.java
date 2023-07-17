@@ -71,7 +71,7 @@ public class AuthenticationView extends CommonView {
         user.withMobileNumber(userView.getValidMobileNumber(userView.getProcessedMobileNumber()));
 
         if (authenticationController.signUp(user.build())) {
-            System.out.println("Sign Up Successfully");
+            printMessage("Sign Up Successfully");
 
             if (exitAccess()) {
                 menu();
@@ -79,6 +79,7 @@ public class AuthenticationView extends CommonView {
                 userView.userScreen(userController.getId(user.build()));
             }
         }
+        System.out.println("Sign Up Not Successfully");
         menu();
     }
 
@@ -94,10 +95,10 @@ public class AuthenticationView extends CommonView {
         user.withPassword(userView.getProcessedPassword());
 
         if (authenticationController.signIn(user.build())) {
-            System.out.println("Sign in successfully");
+            printMessage("Sign in successfully");
             userView.userScreen(userController.getId(user.build()));
         } else {
-            System.out.println("User Not Found. Please Try Again");
+            printMessage("User Not Found. Please Try Again");
             menu();
         }
     }
@@ -143,7 +144,7 @@ public class AuthenticationView extends CommonView {
      * </p>
      */
     private void exit() {
-        System.out.println("Exiting");
+        printMessage("Exiting");
         scanner.close();
         connection.closeConnectionPool();
         System.exit(0);

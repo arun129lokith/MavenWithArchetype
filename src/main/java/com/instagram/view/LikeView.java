@@ -19,12 +19,13 @@ public class LikeView extends CommonView {
     private final PostView postView;
     private final UserView userView;
     private static LikeView likeView = null;
-    private final LikeController LIKE_CONTROLLER = LikeController.getInstance();
+    private final LikeController likeController;
     private static Long id = 1L;
 
     private LikeView() {
         postView = PostView.getInstance();
         userView = UserView.getInstance();
+        likeController = LikeController.getInstance();
     }
 
     /**
@@ -94,7 +95,7 @@ public class LikeView extends CommonView {
         like.setUserId(userId);
         like.setPostId(getPostId());
 
-        LIKE_CONTROLLER.likePost(like);
+        likeController.likePost(like);
 
         printMessage("Post Liked Successfully");
     }
@@ -107,7 +108,7 @@ public class LikeView extends CommonView {
     private void unlikePost() {
         final Long id = getLikeId();
 
-        printMessage(LIKE_CONTROLLER.unlikePost(id) ? "Like Removed Successfully" : "Like Not Found");
+        printMessage(likeController.unlikePost(id) ? "Like Removed Successfully" : "Like Not Found");
     }
 
     /**
@@ -116,7 +117,7 @@ public class LikeView extends CommonView {
      * </p>
      */
     private void getLikedUser() {
-        final Collection<User> users = LIKE_CONTROLLER.getLikeUser(getPostId());
+        final Collection<User> users = likeController.getLikeUser(getPostId());
 
         if (null != users && !users.isEmpty()) {
 
@@ -134,7 +135,7 @@ public class LikeView extends CommonView {
      * </p>
      */
     private void getLikeCount() {
-        final Long getCount = LIKE_CONTROLLER.getLikeCount(getPostId());
+        final Long getCount = likeController.getLikeCount(getPostId());
 
         System.out.println(null != getCount ? getCount : "Post Not Liked By Any User");
     }
@@ -150,7 +151,7 @@ public class LikeView extends CommonView {
         printMessage("Enter Your Like Id:");
 
         try {
-            return Long.valueOf(scanner.nextLine());
+            return Long.valueOf(scanner.nextLine().trim());
         } catch (final NumberFormatException message) {
             printMessage("Invalid Like Id Format. Please Enter A Number");
         }

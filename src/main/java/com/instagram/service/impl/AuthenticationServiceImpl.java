@@ -16,12 +16,10 @@ import java.util.Map;
  */
 public class AuthenticationServiceImpl implements AuthenticationService {
 
-    protected  final Map<Long, User> users;
+    protected  final Map<Long, User> USERS = new HashMap<>();
     private static AuthenticationServiceImpl authenticationServiceImpl;
 
-    protected AuthenticationServiceImpl() {
-        users = new HashMap<>();
-    }
+    protected AuthenticationServiceImpl() {}
 
     /**
      * <p>
@@ -43,7 +41,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
      */
     @Override
     public boolean signUp(final User user) {
-        users.put(user.getId(), user);
+        USERS.put(user.getId(), user);
 
         return true;
     }
@@ -66,7 +64,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
      * @return True if mobile number is exists, false otherwise
      */
     private boolean isMobileNumberExist(final User user) {
-        for (final User existingUser : users.values()) {
+        for (final User existingUser : USERS.values()) {
 
             if (user.getMobileNumber().equals(existingUser.getMobileNumber())
                     && user.getPassword().equals(existingUser.getPassword())) {
@@ -84,7 +82,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
      * @return True if email is exists, false otherwise
      */
     private boolean isEmailExist(final User user) {
-        for (final User existingUser : users.values()) {
+        for (final User existingUser : USERS.values()) {
 
             if (existingUser.getEmail().equals(user.getEmail())
                     && existingUser.getPassword().equals(user.getPassword())) {

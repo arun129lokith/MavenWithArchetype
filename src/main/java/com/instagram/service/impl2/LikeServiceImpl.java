@@ -13,8 +13,8 @@ import java.util.Collection;
  * Implements the service of like related operation
  * </p>
  *
- * @author Arun.
- * @version 1.1.
+ * @author Arun
+ * @version 1.1
  */
 public class LikeServiceImpl implements LikeService {
 

@@ -1,5 +1,6 @@
 package com.instagram.dao.impl;
 
+import com.instagram.customexception.DataAccessException;
 import com.instagram.dao.PostDao;
 import com.instagram.database.DataBaseConnectionPool;
 import com.instagram.model.Post;
@@ -8,6 +9,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
 import java.util.Collection;
 import java.util.LinkedList;
 
@@ -23,6 +25,7 @@ public class PostDaoImpl implements PostDao {
 
     private static PostDaoImpl postDaoImpl = null;
     private final DataBaseConnectionPool connectionPool;
+    private Connection connection = null;
 
     private PostDaoImpl() {
         connectionPool = DataBaseConnectionPool.getInstance();
@@ -50,21 +53,39 @@ public class PostDaoImpl implements PostDao {
         final String query = String.join("","INSERT INTO POST(CAPTION, LOCATION, FORMAT, ",
                 "UPLOADED_TIME, USER_ID) VALUES (?, ? , ?::POST_FORMAT, ?, ?)");
 
-        try (final Connection connection = connectionPool.get();
-             final PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+        try {
+            connection = connectionPool.get();
 
-            preparedStatement.setString(1, post.getCaption());
-            preparedStatement.setString(2, post.getLocation());
-            preparedStatement.setString(3, post.getFormat().toString());
-            preparedStatement.setTimestamp(4, post.getUploadedTime());
-            preparedStatement.setLong(5, post.getUserId());
+            connection.setAutoCommit(false);
 
-            preparedStatement.executeUpdate();
-            connectionPool.releaseConnection(connection);
+            try (final PreparedStatement preparedStatement = connection.prepareStatement(query)) {
 
-            return true;
-        } catch (final SQLException | InterruptedException message) {
-            System.out.println(message.getMessage());
+                preparedStatement.setString(1, post.getCaption());
+                preparedStatement.setString(2, post.getLocation());
+                preparedStatement.setString(3, post.getFormat().toString());
+                preparedStatement.setTimestamp(4, post.getUploadedTime());
+                preparedStatement.setLong(5, post.getUserId());
+
+                preparedStatement.executeUpdate();
+                connection.commit();
+                connectionPool.releaseConnection(connection);
+
+                return true;
+            } catch (SQLException message) {
+                connection.rollback();
+            }
+        } catch (SQLException | InterruptedException message) {
+            throw new DataAccessException(message.getMessage());
+        } finally {
+            if (null != connection) {
+
+                try {
+                    connection.setAutoCommit(true);
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
         return false;
@@ -80,24 +101,42 @@ public class PostDaoImpl implements PostDao {
         final Collection<Post> posts = new LinkedList<>();
         final String query = "SELECT * FROM POST";
 
-        try (final Connection connection = connectionPool.get();
-             final PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            final ResultSet resultSet = preparedStatement.executeQuery();
+        try {
+            connection = connectionPool.get();
 
-            while (resultSet.next()) {
-                final Post post = new Post();
+            connection.setAutoCommit(false);
 
-                post.setId(resultSet.getLong("ID"));
-                post.setCaption(resultSet.getString("CAPTION"));
-                post.setLocation(resultSet.getString("LOCATION"));
-                post.setFormat(Post.Format.valueOf(resultSet.getString("FORMAT")));
-                post.setUploadedTime(resultSet.getTimestamp("UPLOADED_TIME"));
-                post.setUserId(resultSet.getLong("USER_ID"));
-                posts.add(post);
+            try (final PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                final ResultSet resultSet = preparedStatement.executeQuery();
+
+                while (resultSet.next()) {
+                    final Post post = new Post();
+
+                    post.setId(resultSet.getLong("ID"));
+                    post.setCaption(resultSet.getString("CAPTION"));
+                    post.setLocation(resultSet.getString("LOCATION"));
+                    post.setFormat(Post.Format.valueOf(resultSet.getString("FORMAT")));
+                    post.setUploadedTime(resultSet.getTimestamp("UPLOADED_TIME"));
+                    post.setUserId(resultSet.getLong("USER_ID"));
+                    posts.add(post);
+                }
+                connection.commit();
+                connectionPool.releaseConnection(connection);
+            } catch (SQLException message) {
+                connection.rollback();
             }
-            connectionPool.releaseConnection(connection);
-        } catch (final SQLException | InterruptedException message) {
-            System.out.println(message.getMessage());
+        } catch (SQLException | InterruptedException message) {
+            throw new DataAccessException(message.getMessage());
+        } finally {
+            if (null != connection) {
+
+                try {
+                    connection.setAutoCommit(true);
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
         return posts;
@@ -113,28 +152,46 @@ public class PostDaoImpl implements PostDao {
     public Post getPost(final Long id) {
         final String query = "SELECT * FROM POST WHERE ID = ?";
 
-        try (final Connection connection = connectionPool.get();
-             final PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+        try {
+            connection = connectionPool.get();
 
-            preparedStatement.setLong(1, id);
-            final ResultSet resultSet = preparedStatement.executeQuery();
+            connection.setAutoCommit(false);
 
-            if (resultSet.next()) {
-                final Post post = new Post();
+            try (final PreparedStatement preparedStatement = connection.prepareStatement(query)) {
 
-                post.setId(resultSet.getLong("ID"));
-                post.setCaption(resultSet.getString("CAPTION"));
-                post.setLocation(resultSet.getString("LOCATION"));
-                post.setFormat(Post.Format.valueOf(resultSet.getString("FORMAT")));
-                post.setUploadedTime(resultSet.getTimestamp("UPLOADED_TIME"));
-                post.setUserId(resultSet.getLong("USER_ID"));
+                preparedStatement.setLong(1, id);
+                final ResultSet resultSet = preparedStatement.executeQuery();
 
-                connectionPool.releaseConnection(connection);
+                if (resultSet.next()) {
+                    final Post post = new Post();
 
-                return post;
+                    post.setId(resultSet.getLong("ID"));
+                    post.setCaption(resultSet.getString("CAPTION"));
+                    post.setLocation(resultSet.getString("LOCATION"));
+                    post.setFormat(Post.Format.valueOf(resultSet.getString("FORMAT")));
+                    post.setUploadedTime(resultSet.getTimestamp("UPLOADED_TIME"));
+                    post.setUserId(resultSet.getLong("USER_ID"));
+
+                    connection.commit();
+                    connectionPool.releaseConnection(connection);
+
+                    return post;
+                }
+            } catch (SQLException message) {
+                connection.rollback();
             }
-        } catch (final SQLException | InterruptedException message) {
-            System.out.println(message.getMessage());
+        } catch (SQLException | InterruptedException message) {
+            throw new DataAccessException(message.getMessage());
+        } finally {
+            if (null != connection) {
+
+                try {
+                    connection.setAutoCommit(true);
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
         return null;
@@ -150,20 +207,38 @@ public class PostDaoImpl implements PostDao {
     public boolean delete(final Long id) {
         final String query = "DELETE FROM POST WHERE ID = ?";
 
-        try (final Connection connection = connectionPool.get();
-             final PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+        try {
+            connection = connectionPool.get();
+
+            connection.setAutoCommit(false);
+
+            try (final PreparedStatement preparedStatement = connection.prepareStatement(query)) {
 
 
-            preparedStatement.setLong(1, id);
-            int rowDeleted = preparedStatement.executeUpdate();
+                preparedStatement.setLong(1, id);
+                int rowDeleted = preparedStatement.executeUpdate();
 
-            connectionPool.releaseConnection(connection);
+                connection.commit();
+                connectionPool.releaseConnection(connection);
 
-            if (0 < rowDeleted) {
-                return true;
+                if (0 < rowDeleted) {
+                    return true;
+                }
+            } catch (SQLException message) {
+                connection.rollback();
             }
-        } catch (final SQLException | InterruptedException message) {
-            System.out.println(message.getMessage());
+        } catch (SQLException | InterruptedException message) {
+            throw new DataAccessException(message.getMessage());
+        } finally {
+            if (null != connection) {
+
+                try {
+                    connection.setAutoCommit(true);
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
         return false;
@@ -180,23 +255,41 @@ public class PostDaoImpl implements PostDao {
         final String query = String.join("","UPDATE POST SET CAPTION = ?, LOCATION = ?, ",
                 "FORMAT = ?::POST_FORMAT, UPLOADED_TIME = ?  WHERE ID = ?");
 
-        try (final Connection connection = connectionPool.get();
-             final PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+        try {
+            connection = connectionPool.get();
 
-            preparedStatement.setString(1, updatedPost.getCaption());
-            preparedStatement.setString(2, updatedPost.getLocation());
-            preparedStatement.setString(3, updatedPost.getFormat().toString());
-            preparedStatement.setTimestamp(4, updatedPost.getUploadedTime());
-            preparedStatement.setLong(5, updatedPost.getId());
-            final int rowUpdated = preparedStatement.executeUpdate();
+            connection.setAutoCommit(false);
 
-            connectionPool.releaseConnection(connection);
+            try (final PreparedStatement preparedStatement = connection.prepareStatement(query)) {
 
-            if (0 < rowUpdated) {
-                return true;
+                preparedStatement.setString(1, updatedPost.getCaption());
+                preparedStatement.setString(2, updatedPost.getLocation());
+                preparedStatement.setString(3, updatedPost.getFormat().toString());
+                preparedStatement.setTimestamp(4, updatedPost.getUploadedTime());
+                preparedStatement.setLong(5, updatedPost.getId());
+                final int rowUpdated = preparedStatement.executeUpdate();
+
+                connection.commit();
+                connectionPool.releaseConnection(connection);
+
+                if (0 < rowUpdated) {
+                    return true;
+                }
+            } catch (SQLException message) {
+                connection.rollback();
             }
-        } catch (final SQLException | InterruptedException message) {
-            System.out.println(message.getMessage());
+        } catch (SQLException | InterruptedException message) {
+            throw new DataAccessException(message.getMessage());
+        } finally {
+            if (null != connection) {
+
+                try {
+                    connection.setAutoCommit(true);
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
         return false;
@@ -213,29 +306,47 @@ public class PostDaoImpl implements PostDao {
     public Post getPost(final Long id, final Long userId) {
         final String query = "SELECT * FROM POST WHERE ID = ? AND USER_ID = ?";
 
-        try (final Connection connection = connectionPool.get();
-             final PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+        try {
+            connection = connectionPool.get();
 
-            preparedStatement.setLong(1, id);
-            preparedStatement.setLong(2, userId);
-            final ResultSet resultSet = preparedStatement.executeQuery();
+            connection.setAutoCommit(false);
 
-            if (resultSet.next()) {
-                final Post post = new Post();
+            try (final PreparedStatement preparedStatement = connection.prepareStatement(query)) {
 
-                post.setId(resultSet.getLong("ID"));
-                post.setCaption(resultSet.getString("CAPTION"));
-                post.setLocation(resultSet.getString("LOCATION"));
-                post.setFormat(Post.Format.valueOf(resultSet.getString("FORMAT")));
-                post.setUploadedTime(resultSet.getTimestamp("UPLOADED_TIME"));
-                post.setUserId(resultSet.getLong("USER_ID"));
+                preparedStatement.setLong(1, id);
+                preparedStatement.setLong(2, userId);
+                final ResultSet resultSet = preparedStatement.executeQuery();
 
-                connectionPool.releaseConnection(connection);
+                if (resultSet.next()) {
+                    final Post post = new Post();
 
-                return post;
+                    post.setId(resultSet.getLong("ID"));
+                    post.setCaption(resultSet.getString("CAPTION"));
+                    post.setLocation(resultSet.getString("LOCATION"));
+                    post.setFormat(Post.Format.valueOf(resultSet.getString("FORMAT")));
+                    post.setUploadedTime(resultSet.getTimestamp("UPLOADED_TIME"));
+                    post.setUserId(resultSet.getLong("USER_ID"));
+
+                    connection.commit();
+                    connectionPool.releaseConnection(connection);
+
+                    return post;
+                }
+            } catch (SQLException message) {
+                connection.rollback();
             }
-        } catch (final SQLException | InterruptedException message) {
-            System.out.println(message.getMessage());
+        } catch (SQLException | InterruptedException message) {
+            throw new DataAccessException(message.getMessage());
+        } finally {
+            if (null != connection) {
+
+                try {
+                    connection.setAutoCommit(true);
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
         return null;

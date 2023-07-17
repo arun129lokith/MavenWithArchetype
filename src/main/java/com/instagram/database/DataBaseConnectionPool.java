@@ -11,7 +11,7 @@ import java.util.concurrent.BlockingQueue;
 
 /**
  * <p>
- * Connects with data base to store user information
+ * Connects with database to store user information
  * </p>
  *
  * @author Arun

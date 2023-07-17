@@ -1,5 +1,6 @@
 package com.instagram.dao.impl;
 
+import com.instagram.customexception.DataAccessException;
 import com.instagram.dao.AuthenticationDao;
 import com.instagram.database.DataBaseConnectionPool;
 import com.instagram.model.User;
@@ -21,6 +22,7 @@ public class AuthenticationDaoImpl implements AuthenticationDao {
 
     private static AuthenticationDaoImpl authenticationDaoImpl;
     private final DataBaseConnectionPool connectionPool;
+    private Connection connection = null;
 
     private AuthenticationDaoImpl() {
         connectionPool = DataBaseConnectionPool.getInstance();
@@ -48,20 +50,37 @@ public class AuthenticationDaoImpl implements AuthenticationDao {
     public boolean signUp(final User user) {
         final String query = "INSERT INTO USERS (NAME, MOBILE_NUMBER, EMAIL, PASSWORD) VALUES (?,?,?,?)";
 
-        try (final Connection connection = connectionPool.get();
-             final PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+        try {
+            connection = connectionPool.get();
 
-            preparedStatement.setString(1, user.getName());
-            preparedStatement.setString(2, user.getMobileNumber());
-            preparedStatement.setString(3, user.getEmail());
-            preparedStatement.setString(4, user.getPassword());
+            connection.setAutoCommit(false);
 
-            preparedStatement.executeUpdate();
-            connectionPool.releaseConnection(connection);
+            try (final PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                preparedStatement.setString(1, user.getName());
+                preparedStatement.setString(2, user.getMobileNumber());
+                preparedStatement.setString(3, user.getEmail());
+                preparedStatement.setString(4, user.getPassword());
 
-            return true;
-        } catch (final InterruptedException | SQLException message) {
-            System.out.println(message.getMessage());
+                preparedStatement.executeUpdate();
+                connection.commit();
+                connectionPool.releaseConnection(connection);
+
+                return true;
+            } catch (SQLException message) {
+                connection.rollback();
+            }
+        } catch (SQLException | InterruptedException message) {
+            throw new DataAccessException(message.getMessage());
+        } finally {
+            if (null != connection) {
+
+                try {
+                    connection.setAutoCommit(true);
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
         return false;
@@ -77,18 +96,36 @@ public class AuthenticationDaoImpl implements AuthenticationDao {
     public boolean isMobileNumberExist(final User user) {
         final String query = "SELECT * FROM USERS WHERE MOBILE_NUMBER = ? AND PASSWORD = ?";
 
-        try (final Connection connection = connectionPool.get();
-             final PreparedStatement checkStatement = connection.prepareStatement(query)) {
+        try {
+            connection = connectionPool.get();
 
-            checkStatement.setString(1, user.getMobileNumber());
-            checkStatement.setString(2, user.getPassword());
-            final ResultSet resultSet = checkStatement.executeQuery();
+            connection.setAutoCommit(false);
 
-            connectionPool.releaseConnection(connection);
+            try (final PreparedStatement checkStatement = connection.prepareStatement(query)) {
 
-            return resultSet.next();
-        } catch (final SQLException | InterruptedException message) {
-            System.out.println(message.getMessage());
+                checkStatement.setString(1, user.getMobileNumber());
+                checkStatement.setString(2, user.getPassword());
+                final ResultSet resultSet = checkStatement.executeQuery();
+
+                connection.commit();
+                connectionPool.releaseConnection(connection);
+
+                return resultSet.next();
+            } catch (SQLException message) {
+                connection.rollback();
+            }
+        } catch (SQLException | InterruptedException message) {
+            throw new DataAccessException(message.getMessage());
+        } finally {
+            if (null != connection) {
+
+                try {
+                    connection.setAutoCommit(true);
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
         return false;
@@ -104,18 +141,36 @@ public class AuthenticationDaoImpl implements AuthenticationDao {
     public boolean isEmailExist(final User user) {
         final String query = "SELECT * FROM USERS WHERE EMAIL = ? AND PASSWORD = ?";
 
-        try (final Connection connection = connectionPool.get();
-             final PreparedStatement checkStatement = connection.prepareStatement(query)) {
+        try {
+            connection = connectionPool.get();
 
-            checkStatement.setString(1, user.getEmail());
-            checkStatement.setString(2, user.getPassword());
-            final ResultSet resultSet = checkStatement.executeQuery();
+            connection.setAutoCommit(false);
 
-            connectionPool.releaseConnection(connection);
+            try (final PreparedStatement checkStatement = connection.prepareStatement(query)) {
 
-            return resultSet.next();
-        } catch (final SQLException | InterruptedException message) {
-            System.out.println(message.getMessage());
+                checkStatement.setString(1, user.getEmail());
+                checkStatement.setString(2, user.getPassword());
+                final ResultSet resultSet = checkStatement.executeQuery();
+
+                connection.commit();
+                connectionPool.releaseConnection(connection);
+
+                return resultSet.next();
+            } catch (SQLException message) {
+                connection.rollback();
+            }
+        } catch (SQLException | InterruptedException message) {
+            throw new DataAccessException(message.getMessage());
+        } finally {
+            if (null != connection) {
+
+                try {
+                    connection.setAutoCommit(true);
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
         return false;

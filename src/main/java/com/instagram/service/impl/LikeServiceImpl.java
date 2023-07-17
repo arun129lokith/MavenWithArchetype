@@ -18,12 +18,11 @@ import java.util.List;
  * @version 1.0
  */
 public class LikeServiceImpl implements LikeService {
-    private final List<Like> likes;
+
+    private final List<Like> LIKES = new ArrayList<>();;
     private static LikeServiceImpl likeServiceImpl;
 
-    private LikeServiceImpl() {
-        likes = new ArrayList<>();
-    }
+    private LikeServiceImpl() {}
 
     /**
      * <p>
@@ -43,7 +42,7 @@ public class LikeServiceImpl implements LikeService {
      */
     @Override
     public void likePost(final Like like) {
-        likes.add(like);
+        LIKES.add(like);
     }
 
     /**
@@ -54,10 +53,10 @@ public class LikeServiceImpl implements LikeService {
      */
     @Override
     public boolean unlikePost(final Long id) {
-        for (final Like existingLike : likes) {
+        for (final Like existingLike : LIKES) {
 
             if (id.equals(existingLike.getId())) {
-                return likes.remove(existingLike);
+                return LIKES.remove(existingLike);
             }
         }
 
@@ -74,7 +73,7 @@ public class LikeServiceImpl implements LikeService {
     public Collection<User> getLikeUser(final Long postId) {
         final Collection<User> users = new ArrayList<>();
 
-        for (final Like existingLike : likes) {
+        for (final Like existingLike : LIKES) {
 
             if (postId.equals(existingLike.getPostId())) {
                 final UserView userView = UserView.getInstance();
@@ -97,7 +96,7 @@ public class LikeServiceImpl implements LikeService {
     public Long getLikeCount(final Long postId) {
         Long count = 0L;
 
-        for (final Like existingLike : likes) {
+        for (final Like existingLike : LIKES) {
 
             if (postId.equals(existingLike.getPostId())) {
                 count++;

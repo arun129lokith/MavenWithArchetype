@@ -29,7 +29,7 @@ public class PostServiceImpl implements PostService {
 
     /**
      * <p>
-     * Gets a static instance object of the class
+     * Gets the object of the class
      * </p>
      *
      * @return The post service implementation object
@@ -104,7 +104,7 @@ public class PostServiceImpl implements PostService {
      *
      * @param userId Represents id of the user
      * @param id Represents post id
-     * @return The post details of the user.
+     * @return The post details of the user
      */
     @Override
     public Post getPost(final Long id, final Long userId) {

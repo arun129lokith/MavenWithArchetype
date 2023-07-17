@@ -35,7 +35,7 @@ public interface UserService {
 
     /**
      * <p>
-     * Updates the user details.
+     * Updates the user details
      * </p>
      *
      * @param user Represents {@link User} details

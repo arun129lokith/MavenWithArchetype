@@ -1,5 +1,6 @@
 package com.instagram.dao.impl;
 
+import com.instagram.customexception.DataAccessException;
 import com.instagram.dao.UserDao;
 import com.instagram.database.DataBaseConnectionPool;
 import com.instagram.model.User;
@@ -24,6 +25,7 @@ public class UserDaoImpl implements UserDao {
 
     private static UserDaoImpl userDaoImpl = null;
     private final DataBaseConnectionPool connectionPool;
+    private Connection connection = null;
 
     private UserDaoImpl() {
         connectionPool = DataBaseConnectionPool.getInstance();
@@ -49,28 +51,45 @@ public class UserDaoImpl implements UserDao {
     @Override
     public User getUser(final Long id) {
         final String query = "SELECT * FROM USERS WHERE ID = ?";
+        
+        try {
+            connection = connectionPool.get();
 
-        try (final Connection connection = connectionPool.get();
-             final PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            connection.setAutoCommit(false);
 
-            preparedStatement.setLong(1, id);
-            final ResultSet resultSet = preparedStatement.executeQuery();
+            try (final PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                preparedStatement.setLong(1, id);
+                final ResultSet resultSet = preparedStatement.executeQuery();
 
-            if (resultSet.next()) {
-                final User user = new User();
+                if (resultSet.next()) {
+                    final User user = new User();
 
-                user.setId(resultSet.getLong("ID"));
-                user.setName(resultSet.getString("NAME"));
-                user.setEmail(resultSet.getString("EMAIL"));
-                user.setMobileNumber(resultSet.getString("MOBILE_NUMBER"));
-                user.setPassword(resultSet.getString("PASSWORD"));
+                    user.setId(resultSet.getLong("ID"));
+                    user.setName(resultSet.getString("NAME"));
+                    user.setEmail(resultSet.getString("EMAIL"));
+                    user.setMobileNumber(resultSet.getString("MOBILE_NUMBER"));
+                    user.setPassword(resultSet.getString("PASSWORD"));
 
-                connectionPool.releaseConnection(connection);
+                    connection.commit();
+                    connectionPool.releaseConnection(connection);
 
-                return user;
+                    return user;
+                }
+            } catch (SQLException message) {
+                connection.rollback();
             }
-        } catch (final SQLException | InterruptedException message) {
-            System.out.println(message.getMessage());
+        } catch (SQLException | InterruptedException message) {
+            throw new DataAccessException(message.getMessage());
+        } finally {
+            if (null != connection) {
+
+                try {
+                    connection.setAutoCommit(true);
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
         return null;
@@ -86,23 +105,41 @@ public class UserDaoImpl implements UserDao {
         final Collection<User> users = new LinkedList<>();
         final String query = "SELECT * FROM USERS";
 
-        try (final Connection connection = connectionPool.get();
-             final PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            final ResultSet resultSet = preparedStatement.executeQuery();
+        try {
+            connection = connectionPool.get();
 
-            while (resultSet.next()) {
-                final User user = new User();
+            connection.setAutoCommit(false);
 
-                user.setPassword(resultSet.getString("PASSWORD"));
-                user.setId(resultSet.getLong("ID"));
-                user.setName(resultSet.getString("NAME"));
-                user.setMobileNumber(resultSet.getString("MOBILE_NUMBER"));
-                user.setEmail(resultSet.getString("EMAIL"));
-                users.add(user);
+            try (final PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                final ResultSet resultSet = preparedStatement.executeQuery();
+
+                while (resultSet.next()) {
+                    final User user = new User();
+
+                    user.setPassword(resultSet.getString("PASSWORD"));
+                    user.setId(resultSet.getLong("ID"));
+                    user.setName(resultSet.getString("NAME"));
+                    user.setMobileNumber(resultSet.getString("MOBILE_NUMBER"));
+                    user.setEmail(resultSet.getString("EMAIL"));
+                    users.add(user);
+                }
+                connection.commit();
+                connectionPool.releaseConnection(connection);
+            } catch (SQLException message) {
+                connection.rollback();
             }
-            connectionPool.releaseConnection(connection);
-        } catch (final SQLException | InterruptedException message) {
-            System.out.println(message.getMessage());
+        } catch (SQLException | InterruptedException message) {
+            throw new DataAccessException(message.getMessage());
+        } finally {
+            if (null != connection) {
+
+                try {
+                    connection.setAutoCommit(true);
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
         return users;
@@ -118,23 +155,41 @@ public class UserDaoImpl implements UserDao {
     public boolean update(final User user) {
         final String query = "UPDATE USERS SET NAME = ?, MOBILE_NUMBER = ?, EMAIL = ?, PASSWORD = ? WHERE ID = ?";
 
-        try (final Connection connection = connectionPool.get();
-             final PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+        try {
+            connection = connectionPool.get();
 
-            preparedStatement.setString(1, user.getName());
-            preparedStatement.setString(2, user.getMobileNumber());
-            preparedStatement.setString(3, user.getEmail());
-            preparedStatement.setString(4, user.getPassword());
-            preparedStatement.setLong(5, user.getId());
-            int rowUpdated = preparedStatement.executeUpdate();
+            connection.setAutoCommit(false);
 
-            connectionPool.releaseConnection(connection);
+            try (final PreparedStatement preparedStatement = connection.prepareStatement(query)) {
 
-            if (0 < rowUpdated) {
-                return true;
+                preparedStatement.setString(1, user.getName());
+                preparedStatement.setString(2, user.getMobileNumber());
+                preparedStatement.setString(3, user.getEmail());
+                preparedStatement.setString(4, user.getPassword());
+                preparedStatement.setLong(5, user.getId());
+                int rowUpdated = preparedStatement.executeUpdate();
+
+                connection.commit();
+                connectionPool.releaseConnection(connection);
+
+                if (0 < rowUpdated) {
+                    return true;
+                }
+            } catch (SQLException message) {
+                connection.rollback();
             }
-        } catch (final SQLException | InterruptedException message) {
-            System.out.println(message.getMessage());
+        } catch (SQLException | InterruptedException message) {
+            throw new DataAccessException(message.getMessage());
+        } finally {
+            if (null != connection) {
+
+                try {
+                    connection.setAutoCommit(true);
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
         return false;
@@ -150,20 +205,39 @@ public class UserDaoImpl implements UserDao {
     public boolean delete(final Long id) {
         final String query = "DELETE FROM USERS WHERE ID = ?";
 
-        try (final Connection connection = connectionPool.get();
-             final PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+        try {
+            connection = connectionPool.get();
 
-            preparedStatement.setLong(1, id);
-            int rowDeleted = preparedStatement.executeUpdate();
+            connection.setAutoCommit(false);
 
-            connectionPool.releaseConnection(connection);
+            try (final PreparedStatement preparedStatement = connection.prepareStatement(query)) {
 
-            if (0 < rowDeleted) {
-                return true;
+                preparedStatement.setLong(1, id);
+                int rowDeleted = preparedStatement.executeUpdate();
+
+                connection.commit();
+                connectionPool.releaseConnection(connection);
+
+                if (0 < rowDeleted) {
+                    return true;
+                }
+            } catch (SQLException message) {
+                connection.rollback();
             }
-        } catch (final SQLException | InterruptedException message) {
-            System.out.println(message.getMessage());
+        } catch (SQLException | InterruptedException message) {
+            throw new DataAccessException(message.getMessage());
+        } finally {
+            if (null != connection) {
+
+                try {
+                    connection.setAutoCommit(true);
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
+
 
         return false;
     }
@@ -178,20 +252,38 @@ public class UserDaoImpl implements UserDao {
     public Long getId(final User user) {
         final String query = "SELECT ID FROM USERS WHERE EMAIL = ? OR MOBILE_NUMBER = ?";
 
-        try (final Connection connection = connectionPool.get();
-             final PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+        try {
+            connection = connectionPool.get();
 
-            preparedStatement.setString(1, user.getEmail());
-            preparedStatement.setString(2, user.getMobileNumber());
-            final ResultSet resultSet = preparedStatement.executeQuery();
+            connection.setAutoCommit(false);
 
-            if (resultSet.next()) {
-                connectionPool.releaseConnection(connection);
+            try (final PreparedStatement preparedStatement = connection.prepareStatement(query)) {
 
-                return resultSet.getLong("ID");
+                preparedStatement.setString(1, user.getEmail());
+                preparedStatement.setString(2, user.getMobileNumber());
+                final ResultSet resultSet = preparedStatement.executeQuery();
+
+                if (resultSet.next()) {
+                    connection.commit();
+                    connectionPool.releaseConnection(connection);
+
+                    return resultSet.getLong("ID");
+                }
+            } catch (SQLException message) {
+                connection.rollback();
             }
-        } catch (final SQLException | InterruptedException message) {
-            System.out.println(message.getMessage());
+        } catch (SQLException | InterruptedException message) {
+            throw new DataAccessException(message.getMessage());
+        } finally {
+            if (null != connection) {
+
+                try {
+                    connection.setAutoCommit(true);
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
         return null;
@@ -207,17 +299,35 @@ public class UserDaoImpl implements UserDao {
     public boolean isNameExist(final String name) {
         final String query = "SELECT * FROM USERS WHERE NAME = ?";
 
-        try (final Connection connection = connectionPool.get();
-             final PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+        try {
+            connection = connectionPool.get();
 
-            preparedStatement.setString(1, name);
-            final ResultSet resultSet = preparedStatement.executeQuery();
+            connection.setAutoCommit(false);
 
-            connectionPool.releaseConnection(connection);
+            try (final PreparedStatement preparedStatement = connection.prepareStatement(query)) {
 
-            return resultSet.next();
-        } catch (final SQLException | InterruptedException message) {
-            System.out.println(message.getMessage());
+                preparedStatement.setString(1, name);
+                final ResultSet resultSet = preparedStatement.executeQuery();
+
+                connection.commit();
+                connectionPool.releaseConnection(connection);
+
+                return resultSet.next();
+            } catch (SQLException message) {
+                connection.rollback();
+            }
+        } catch (SQLException | InterruptedException message) {
+            throw new DataAccessException(message.getMessage());
+        } finally {
+            if (null != connection) {
+
+                try {
+                    connection.setAutoCommit(true);
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
         return true;
@@ -233,17 +343,35 @@ public class UserDaoImpl implements UserDao {
     public boolean isEmailExist(final String email) {
         final String query = "SELECT * FROM USERS WHERE EMAIL = ?";
 
-        try (final Connection connection = connectionPool.get();
-             final PreparedStatement checkStatement = connection.prepareStatement(query)) {
+        try {
+            connection = connectionPool.get();
 
-            checkStatement.setString(1, email);
-            final ResultSet resultSet = checkStatement.executeQuery();
+            connection.setAutoCommit(false);
 
-            connectionPool.releaseConnection(connection);
+            try (final PreparedStatement checkStatement = connection.prepareStatement(query)) {
 
-            return resultSet.next();
-        } catch (final SQLException | InterruptedException message) {
-            System.out.println(message.getMessage());
+                checkStatement.setString(1, email);
+                final ResultSet resultSet = checkStatement.executeQuery();
+
+                connection.commit();
+                connectionPool.releaseConnection(connection);
+
+                return resultSet.next();
+            } catch (SQLException message) {
+                connection.rollback();
+            }
+        } catch (SQLException | InterruptedException message) {
+            throw new DataAccessException(message.getMessage());
+        } finally {
+            if (null != connection) {
+
+                try {
+                    connection.setAutoCommit(true);
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
         return true;
@@ -259,17 +387,35 @@ public class UserDaoImpl implements UserDao {
     public boolean isMobileNumberExist(final String mobileNumber) {
         final String query = "SELECT * FROM USERS WHERE MOBILE_NUMBER = ?";
 
-        try (final Connection connection = connectionPool.get();
-             final PreparedStatement checkStatement = connection.prepareStatement(query)) {
+        try {
+            connection = connectionPool.get();
 
-            checkStatement.setString(1, mobileNumber);
-            final ResultSet resultSet = checkStatement.executeQuery();
+            connection.setAutoCommit(false);
 
-            connectionPool.releaseConnection(connection);
+            try (final PreparedStatement checkStatement = connection.prepareStatement(query)) {
 
-            return resultSet.next();
-        } catch (final SQLException | InterruptedException message) {
-            System.out.println(message.getMessage());
+                checkStatement.setString(1, mobileNumber);
+                final ResultSet resultSet = checkStatement.executeQuery();
+
+                connection.commit();
+                connectionPool.releaseConnection(connection);
+
+                return resultSet.next();
+            }  catch (SQLException message) {
+                connection.rollback();
+            }
+        } catch (SQLException | InterruptedException message) {
+            throw new DataAccessException(message.getMessage());
+        } finally {
+            if (null != connection) {
+
+                try {
+                    connection.setAutoCommit(true);
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
         return true;
