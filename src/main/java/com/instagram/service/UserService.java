@@ -2,7 +2,6 @@ package com.instagram.service;
 
 import com.instagram.model.User;
 
-import java.sql.SQLException;
 import java.util.Collection;
 
 /**
@@ -36,7 +35,7 @@ public interface UserService {
 
     /**
      * <p>
-     * Updates the user details.
+     * Updates the user details
      * </p>
      *
      * @param user Represents {@link User} details

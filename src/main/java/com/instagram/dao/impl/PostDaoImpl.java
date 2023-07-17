@@ -1,5 +1,6 @@
 package com.instagram.dao.impl;
 
+import com.instagram.customexception.DataAccessException;
 import com.instagram.dao.PostDao;
 import com.instagram.database.DataBaseConnectionPool;
 import com.instagram.model.Post;
@@ -8,6 +9,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
 import java.util.Collection;
 import java.util.LinkedList;
 
@@ -69,18 +71,18 @@ public class PostDaoImpl implements PostDao {
                 connectionPool.releaseConnection(connection);
 
                 return true;
-            } catch (final SQLException message) {
+            } catch (SQLException message) {
                 connection.rollback();
             }
-        } catch (final SQLException | InterruptedException message) {
-            message.printStackTrace();
+        } catch (SQLException | InterruptedException message) {
+            throw new DataAccessException(message.getMessage());
         } finally {
             if (null != connection) {
 
                 try {
                     connection.setAutoCommit(true);
                     connection.close();
-                } catch (final SQLException e) {
+                } catch (SQLException e) {
                     e.printStackTrace();
                 }
             }
@@ -120,18 +122,18 @@ public class PostDaoImpl implements PostDao {
                 }
                 connection.commit();
                 connectionPool.releaseConnection(connection);
-            } catch (final SQLException message) {
+            } catch (SQLException message) {
                 connection.rollback();
             }
-        } catch (final SQLException | InterruptedException message) {
-            message.printStackTrace();
+        } catch (SQLException | InterruptedException message) {
+            throw new DataAccessException(message.getMessage());
         } finally {
             if (null != connection) {
 
                 try {
                     connection.setAutoCommit(true);
                     connection.close();
-                } catch (final SQLException e) {
+                } catch (SQLException e) {
                     e.printStackTrace();
                 }
             }
@@ -175,18 +177,18 @@ public class PostDaoImpl implements PostDao {
 
                     return post;
                 }
-            } catch (final SQLException message) {
+            } catch (SQLException message) {
                 connection.rollback();
             }
-        } catch (final SQLException | InterruptedException message) {
-            message.printStackTrace();
+        } catch (SQLException | InterruptedException message) {
+            throw new DataAccessException(message.getMessage());
         } finally {
             if (null != connection) {
 
                 try {
                     connection.setAutoCommit(true);
                     connection.close();
-                } catch (final SQLException e) {
+                } catch (SQLException e) {
                     e.printStackTrace();
                 }
             }
@@ -222,18 +224,18 @@ public class PostDaoImpl implements PostDao {
                 if (0 < rowDeleted) {
                     return true;
                 }
-            } catch (final SQLException message) {
+            } catch (SQLException message) {
                 connection.rollback();
             }
-        } catch (final SQLException | InterruptedException message) {
-            message.printStackTrace();
+        } catch (SQLException | InterruptedException message) {
+            throw new DataAccessException(message.getMessage());
         } finally {
             if (null != connection) {
 
                 try {
                     connection.setAutoCommit(true);
                     connection.close();
-                } catch (final SQLException e) {
+                } catch (SQLException e) {
                     e.printStackTrace();
                 }
             }
@@ -273,18 +275,18 @@ public class PostDaoImpl implements PostDao {
                 if (0 < rowUpdated) {
                     return true;
                 }
-            } catch (final SQLException message) {
+            } catch (SQLException message) {
                 connection.rollback();
             }
-        } catch (final SQLException | InterruptedException message) {
-            message.printStackTrace();
+        } catch (SQLException | InterruptedException message) {
+            throw new DataAccessException(message.getMessage());
         } finally {
             if (null != connection) {
 
                 try {
                     connection.setAutoCommit(true);
                     connection.close();
-                } catch (final SQLException e) {
+                } catch (SQLException e) {
                     e.printStackTrace();
                 }
             }
@@ -330,18 +332,18 @@ public class PostDaoImpl implements PostDao {
 
                     return post;
                 }
-            } catch (final SQLException message) {
+            } catch (SQLException message) {
                 connection.rollback();
             }
-        } catch (final SQLException | InterruptedException message) {
-            message.printStackTrace();
+        } catch (SQLException | InterruptedException message) {
+            throw new DataAccessException(message.getMessage());
         } finally {
             if (null != connection) {
 
                 try {
                     connection.setAutoCommit(true);
                     connection.close();
-                } catch (final SQLException e) {
+                } catch (SQLException e) {
                     e.printStackTrace();
                 }
             }

@@ -5,6 +5,7 @@ import com.instagram.model.Post.Format;
 import com.instagram.model.PostBuilder;
 
 import java.sql.Timestamp;
+
 import java.time.Instant;
 
 /**
@@ -106,7 +107,7 @@ public class PostView extends CommonView {
     private String getCaption() {
         printMessage("Enter Your Caption:");
 
-        return scanner.nextLine();
+        return scanner.nextLine().trim();
     }
 
     /**
@@ -125,7 +126,6 @@ public class PostView extends CommonView {
         post.withCaption(getCaption());
         post.withUploadedTime(Timestamp.from(Instant.now()));
         post.withUserId(userId);
-
 
         printMessage(postController.create(post.build()) ? "User Posted Successfully" : "Post Not Created");
         menu(userId);
@@ -222,7 +222,7 @@ public class PostView extends CommonView {
         printMessage("Enter Your PostId:");
 
         try {
-            return Long.parseLong(scanner.nextLine());
+            return Long.parseLong(scanner.nextLine().trim());
         } catch (final NumberFormatException message) {
             printMessage("Invalid Post Id Format. Please Enter A Number");
         }
@@ -240,6 +240,7 @@ public class PostView extends CommonView {
      */
     private Post getPostById(final Long userId) {
         final Post post = getPost();
+
 
         if (null != post) {
             final Post existingPost = postController.getPost(post.getId(), userId);

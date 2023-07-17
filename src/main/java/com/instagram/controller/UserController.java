@@ -4,7 +4,6 @@ import com.instagram.model.User;
 import com.instagram.service.impl2.UserServiceImpl;
 import com.instagram.service.UserService;
 
-
 import java.util.Collection;
 
 /**

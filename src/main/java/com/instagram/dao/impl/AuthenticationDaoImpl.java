@@ -1,5 +1,6 @@
 package com.instagram.dao.impl;
 
+import com.instagram.customexception.DataAccessException;
 import com.instagram.dao.AuthenticationDao;
 import com.instagram.database.DataBaseConnectionPool;
 import com.instagram.model.User;
@@ -55,7 +56,6 @@ public class AuthenticationDaoImpl implements AuthenticationDao {
             connection.setAutoCommit(false);
 
             try (final PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-
                 preparedStatement.setString(1, user.getName());
                 preparedStatement.setString(2, user.getMobileNumber());
                 preparedStatement.setString(3, user.getEmail());
@@ -66,18 +66,18 @@ public class AuthenticationDaoImpl implements AuthenticationDao {
                 connectionPool.releaseConnection(connection);
 
                 return true;
-            } catch (final SQLException message) {
+            } catch (SQLException message) {
                 connection.rollback();
             }
-        } catch (final SQLException | InterruptedException message) {
-            message.printStackTrace();
+        } catch (SQLException | InterruptedException message) {
+            throw new DataAccessException(message.getMessage());
         } finally {
             if (null != connection) {
 
                 try {
                     connection.setAutoCommit(true);
                     connection.close();
-                } catch (final SQLException e) {
+                } catch (SQLException e) {
                     e.printStackTrace();
                 }
             }
@@ -111,18 +111,18 @@ public class AuthenticationDaoImpl implements AuthenticationDao {
                 connectionPool.releaseConnection(connection);
 
                 return resultSet.next();
-            } catch (final SQLException message) {
+            } catch (SQLException message) {
                 connection.rollback();
             }
-        } catch (final SQLException | InterruptedException message) {
-            message.printStackTrace();
+        } catch (SQLException | InterruptedException message) {
+            throw new DataAccessException(message.getMessage());
         } finally {
             if (null != connection) {
 
                 try {
                     connection.setAutoCommit(true);
                     connection.close();
-                } catch (final SQLException e) {
+                } catch (SQLException e) {
                     e.printStackTrace();
                 }
             }
@@ -156,18 +156,18 @@ public class AuthenticationDaoImpl implements AuthenticationDao {
                 connectionPool.releaseConnection(connection);
 
                 return resultSet.next();
-            } catch (final SQLException message) {
+            } catch (SQLException message) {
                 connection.rollback();
             }
-        } catch (final SQLException | InterruptedException message) {
-            message.printStackTrace();
+        } catch (SQLException | InterruptedException message) {
+            throw new DataAccessException(message.getMessage());
         } finally {
             if (null != connection) {
 
                 try {
                     connection.setAutoCommit(true);
                     connection.close();
-                } catch (final SQLException e) {
+                } catch (SQLException e) {
                     e.printStackTrace();
                 }
             }

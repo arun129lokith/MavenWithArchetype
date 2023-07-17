@@ -12,7 +12,6 @@ import com.instagram.model.User;
  */
 public interface AuthenticationDao {
 
-
     /**
      * <p>
      * Signs up a new user with user details of user class

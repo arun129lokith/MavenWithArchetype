@@ -4,6 +4,12 @@ import com.instagram.model.UserBuilder;
 import com.instagram.model.Post;
 import com.instagram.model.User;
 
+import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
+
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
 /**
  * <p>
  * Users to interact with application for accessing the features of the application
@@ -27,7 +33,7 @@ public class UserView extends CommonView {
      * @return The user view object
      */
     public static UserView getInstance() {
-        return null == userView ?  userView = new UserView() : userView;
+        return null == userView ? userView = new UserView() : userView;
     }
 
     /**
@@ -118,7 +124,42 @@ public class UserView extends CommonView {
 
         exitMenu(password);
 
-        return validation.validatePassword(password) ? password : getProcessedPassword();
+        if (validation.validatePassword(password)) {
+            final String hashPassword = hashPassword(password);
+
+            if (null != hashPassword) {
+                return hashPassword.substring(0,16);
+            }
+        }
+
+        return getProcessedPassword();
+    }
+
+    /**
+     * <p>
+     * Encrypts the password using hashing techniques
+     * </p>
+     *
+     * @param password Represents the user password
+     * @return The encrypted password
+     */
+    private String hashPassword(final String password) {
+        try {
+            final MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
+            final byte[] encodedHash = messageDigest.digest(password.getBytes(StandardCharsets.UTF_8));
+            final BigInteger number = new BigInteger(encodedHash);
+            final StringBuilder hexString = new StringBuilder(number.toString(16));
+
+            while (hexString.length() < 32) {
+                hexString.insert(0,'0');
+            }
+
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException message) {
+            printMessage("Hashing Algorithm Is Not Found");
+        }
+
+        return null;
     }
 
     /**
@@ -258,7 +299,7 @@ public class UserView extends CommonView {
      */
     private Long getUserId() {
         try {
-            return Long.parseLong(scanner.nextLine());
+            return Long.parseLong(scanner.nextLine().trim());
         } catch (final NumberFormatException message) {
             printMessage("Invalid User Id Format. Please Enter A Number");
         }
@@ -282,7 +323,8 @@ public class UserView extends CommonView {
         user.withName(exitAccess() ? existingUser.getName() : getValidName(getProcessedUserName()));
         user.withPassword(exitAccess() ? existingUser.getPassword() : getProcessedPassword());
         user.withEmail(exitAccess() ? existingUser.getEmail() : getValidEmail(getProcessedEmail()));
-        user.withMobileNumber(exitAccess() ? existingUser.getMobileNumber() : getValidMobileNumber(getProcessedMobileNumber()));
+        user.withMobileNumber(exitAccess() ? existingUser.getMobileNumber()
+                : getValidMobileNumber(getProcessedMobileNumber()));
 
         printMessage(userController.update(user.build()) ? "Account Updated Successfully" : "User Not Found");
     }

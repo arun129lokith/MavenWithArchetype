@@ -1,5 +1,6 @@
 package com.instagram.dao.impl;
 
+import com.instagram.customexception.DataAccessException;
 import com.instagram.dao.LikeDao;
 import com.instagram.database.DataBaseConnectionPool;
 import com.instagram.model.Like;
@@ -63,18 +64,18 @@ public class LikeDaoImpl implements LikeDao {
                 preparedStatement.executeUpdate();
                 connection.commit();
                 connectionPool.releaseConnection(connection);
-            } catch (final SQLException message) {
+            } catch (SQLException message) {
                 connection.rollback();
             }
-        } catch (final SQLException | InterruptedException message) {
-            message.printStackTrace();
+        } catch (SQLException | InterruptedException message) {
+            throw new DataAccessException(message.getMessage());
         } finally {
             if (null != connection) {
 
                 try {
                     connection.setAutoCommit(true);
                     connection.close();
-                } catch (final SQLException e) {
+                } catch (SQLException e) {
                     e.printStackTrace();
                 }
             }
@@ -106,18 +107,18 @@ public class LikeDaoImpl implements LikeDao {
                 if (0 < preparedStatement.executeUpdate()) {
                     return true;
                 }
-            } catch (final SQLException message) {
+            } catch (SQLException message) {
                 connection.rollback();
             }
-        } catch (final SQLException | InterruptedException message) {
-            message.printStackTrace();
+        } catch (SQLException | InterruptedException message) {
+            throw new DataAccessException(message.getMessage());
         } finally {
             if (null != connection) {
 
                 try {
                     connection.setAutoCommit(true);
                     connection.close();
-                } catch (final SQLException e) {
+                } catch (SQLException e) {
                     e.printStackTrace();
                 }
             }
@@ -155,18 +156,18 @@ public class LikeDaoImpl implements LikeDao {
                 }
                 connection.commit();
                 connectionPool.releaseConnection(connection);
-            } catch (final SQLException message) {
+            } catch (SQLException message) {
                 connection.rollback();
             }
-        } catch (final SQLException | InterruptedException message) {
-            message.printStackTrace();
+        } catch (SQLException | InterruptedException message) {
+            throw new DataAccessException(message.getMessage());
         } finally {
             if (null != connection) {
 
                 try {
                     connection.setAutoCommit(true);
                     connection.close();
-                } catch (final SQLException e) {
+                } catch (SQLException e) {
                     e.printStackTrace();
                 }
             }
@@ -201,18 +202,18 @@ public class LikeDaoImpl implements LikeDao {
                 if (resultSet.next()) {
                     return resultSet.getLong("LIKE_COUNT");
                 }
-            } catch (final SQLException message) {
+            } catch (SQLException message) {
                 connection.rollback();
             }
-        } catch (final SQLException | InterruptedException message) {
-            message.printStackTrace();
+        } catch (SQLException | InterruptedException message) {
+            throw new DataAccessException(message.getMessage());
         } finally {
             if (null != connection) {
 
                 try {
                     connection.setAutoCommit(true);
                     connection.close();
-                } catch (final SQLException e) {
+                } catch (SQLException e) {
                     e.printStackTrace();
                 }
             }

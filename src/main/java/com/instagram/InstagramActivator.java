@@ -1,9 +1,11 @@
 package com.instagram;
 
+import com.instagram.customexception.FileAccessException;
 import com.instagram.view.AuthenticationView;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+
 import java.util.Properties;
 
 /**
@@ -25,7 +27,7 @@ public class InstagramActivator {
 
             PROPERTIES.load(file);
         } catch (IOException message) {
-            System.out.println(message.getMessage());
+            throw new FileAccessException(message.getMessage());
         }
     }
 

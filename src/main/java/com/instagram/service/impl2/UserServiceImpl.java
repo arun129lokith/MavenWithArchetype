@@ -5,7 +5,6 @@ import com.instagram.dao.UserDao;
 import com.instagram.model.User;
 import com.instagram.dao.impl.UserDaoImpl;
 
-import java.sql.SQLException;
 import java.util.Collection;
 
 /**

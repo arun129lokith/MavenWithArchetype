@@ -19,12 +19,10 @@ import java.util.ArrayList;
  */
 public class PostServiceImpl implements PostService {
 
-    private final List<Post> posts;
+    private final List<Post> POSTS = new ArrayList<>();
     private static PostServiceImpl postServiceImpl = null;
 
-    private PostServiceImpl() {
-        posts = new ArrayList<>();
-    }
+    private PostServiceImpl() {}
 
     /**
      * <p>
@@ -52,7 +50,7 @@ public class PostServiceImpl implements PostService {
         posts.add(post);
         user.setPosts(posts);
 
-        return this.posts.add(post);
+        return this.POSTS.add(post);
     }
 
     /**
@@ -62,7 +60,7 @@ public class PostServiceImpl implements PostService {
      */
     @Override
     public Collection<Post> getAllPost() {
-        return posts;
+        return POSTS;
     }
 
     /**
@@ -73,7 +71,7 @@ public class PostServiceImpl implements PostService {
      */
     @Override
     public Post getPost(final Long id) {
-        for (final Post post : posts) {
+        for (final Post post : POSTS) {
 
             if (post.getId().equals(id)) {
                 return post;
@@ -93,14 +91,14 @@ public class PostServiceImpl implements PostService {
     public boolean delete(final Long id) {
         final Post post = getPost(id);
 
-        if (posts.contains(post)) {
+        if (POSTS.contains(post)) {
             final UserView userView = UserView.getInstance();
             final User user = userView.getUserById(post.getUserId());
             final List<Post> posts = user.getPosts();
 
             posts.remove(post);
 
-            return this.posts.remove(post);
+            return this.POSTS.remove(post);
         } else {
             return false;
         }
@@ -114,15 +112,15 @@ public class PostServiceImpl implements PostService {
      */
     @Override
     public boolean update(final Post updatedPost) {
-        for (int index = 0; index < posts.size(); index++) {
+        for (int index = 0; index < POSTS.size(); index++) {
 
-            if (posts.get(index).getId().equals(updatedPost.getId())) {
+            if (POSTS.get(index).getId().equals(updatedPost.getId())) {
                 final UserView userView = UserView.getInstance();
                 final User user = userView.getUserById(updatedPost.getUserId());
                 final List<Post> posts = user.getPosts();
 
                 posts.set(index, updatedPost);
-                this.posts.set(index, updatedPost);
+                this.POSTS.set(index, updatedPost);
 
                 return true;
             }
@@ -140,7 +138,7 @@ public class PostServiceImpl implements PostService {
      */
     @Override
     public Post getPost(final Long id, final Long userId) {
-        for (final Post existingPost : posts) {
+        for (final Post existingPost : POSTS) {
 
             if (id.equals(existingPost.getId()) && userId.equals(existingPost.getUserId())) {
                 return existingPost;

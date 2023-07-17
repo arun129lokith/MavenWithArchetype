@@ -1,5 +1,6 @@
 package com.instagram.dao.impl;
 
+import com.instagram.customexception.DataAccessException;
 import com.instagram.dao.UserDao;
 import com.instagram.database.DataBaseConnectionPool;
 import com.instagram.model.User;
@@ -74,18 +75,18 @@ public class UserDaoImpl implements UserDao {
 
                     return user;
                 }
-            } catch (final SQLException message) {
+            } catch (SQLException message) {
                 connection.rollback();
             }
         } catch (SQLException | InterruptedException message) {
-            message.printStackTrace();
+            throw new DataAccessException(message.getMessage());
         } finally {
             if (null != connection) {
 
                 try {
                     connection.setAutoCommit(true);
                     connection.close();
-                } catch (final SQLException e) {
+                } catch (SQLException e) {
                     e.printStackTrace();
                 }
             }
@@ -122,21 +123,20 @@ public class UserDaoImpl implements UserDao {
                     user.setEmail(resultSet.getString("EMAIL"));
                     users.add(user);
                 }
-
                 connection.commit();
                 connectionPool.releaseConnection(connection);
-            } catch (final SQLException message) {
+            } catch (SQLException message) {
                 connection.rollback();
             }
-        } catch (final SQLException | InterruptedException message) {
-            message.printStackTrace();
+        } catch (SQLException | InterruptedException message) {
+            throw new DataAccessException(message.getMessage());
         } finally {
             if (null != connection) {
 
                 try {
                     connection.setAutoCommit(true);
                     connection.close();
-                } catch (final SQLException e) {
+                } catch (SQLException e) {
                     e.printStackTrace();
                 }
             }
@@ -175,18 +175,18 @@ public class UserDaoImpl implements UserDao {
                 if (0 < rowUpdated) {
                     return true;
                 }
-            } catch (final SQLException message) {
+            } catch (SQLException message) {
                 connection.rollback();
             }
-        } catch (final SQLException | InterruptedException message) {
-            message.printStackTrace();
+        } catch (SQLException | InterruptedException message) {
+            throw new DataAccessException(message.getMessage());
         } finally {
             if (null != connection) {
 
                 try {
                     connection.setAutoCommit(true);
                     connection.close();
-                } catch (final SQLException e) {
+                } catch (SQLException e) {
                     e.printStackTrace();
                 }
             }
@@ -221,18 +221,18 @@ public class UserDaoImpl implements UserDao {
                 if (0 < rowDeleted) {
                     return true;
                 }
-            } catch (final SQLException message) {
+            } catch (SQLException message) {
                 connection.rollback();
             }
-        } catch (final SQLException | InterruptedException message) {
-            message.printStackTrace();
+        } catch (SQLException | InterruptedException message) {
+            throw new DataAccessException(message.getMessage());
         } finally {
             if (null != connection) {
 
                 try {
                     connection.setAutoCommit(true);
                     connection.close();
-                } catch (final SQLException e) {
+                } catch (SQLException e) {
                     e.printStackTrace();
                 }
             }
@@ -269,18 +269,18 @@ public class UserDaoImpl implements UserDao {
 
                     return resultSet.getLong("ID");
                 }
-            } catch (final SQLException message) {
+            } catch (SQLException message) {
                 connection.rollback();
             }
-        } catch (final SQLException | InterruptedException message) {
-            message.printStackTrace();
+        } catch (SQLException | InterruptedException message) {
+            throw new DataAccessException(message.getMessage());
         } finally {
             if (null != connection) {
 
                 try {
                     connection.setAutoCommit(true);
                     connection.close();
-                } catch (final SQLException e) {
+                } catch (SQLException e) {
                     e.printStackTrace();
                 }
             }
@@ -313,18 +313,18 @@ public class UserDaoImpl implements UserDao {
                 connectionPool.releaseConnection(connection);
 
                 return resultSet.next();
-            } catch (final SQLException message) {
+            } catch (SQLException message) {
                 connection.rollback();
             }
-        } catch (final SQLException | InterruptedException message) {
-            message.printStackTrace();
+        } catch (SQLException | InterruptedException message) {
+            throw new DataAccessException(message.getMessage());
         } finally {
             if (null != connection) {
 
                 try {
                     connection.setAutoCommit(true);
                     connection.close();
-                } catch (final SQLException e) {
+                } catch (SQLException e) {
                     e.printStackTrace();
                 }
             }
@@ -357,18 +357,18 @@ public class UserDaoImpl implements UserDao {
                 connectionPool.releaseConnection(connection);
 
                 return resultSet.next();
-            } catch (final SQLException message) {
+            } catch (SQLException message) {
                 connection.rollback();
             }
-        } catch (final SQLException | InterruptedException message) {
-            message.printStackTrace();
+        } catch (SQLException | InterruptedException message) {
+            throw new DataAccessException(message.getMessage());
         } finally {
             if (null != connection) {
 
                 try {
                     connection.setAutoCommit(true);
                     connection.close();
-                } catch (final SQLException e) {
+                } catch (SQLException e) {
                     e.printStackTrace();
                 }
             }
@@ -401,18 +401,18 @@ public class UserDaoImpl implements UserDao {
                 connectionPool.releaseConnection(connection);
 
                 return resultSet.next();
-            }  catch (final SQLException message) {
+            }  catch (SQLException message) {
                 connection.rollback();
             }
-        } catch (final SQLException | InterruptedException message) {
-            message.printStackTrace();
+        } catch (SQLException | InterruptedException message) {
+            throw new DataAccessException(message.getMessage());
         } finally {
             if (null != connection) {
 
                 try {
                     connection.setAutoCommit(true);
                     connection.close();
-                } catch (final SQLException e) {
+                } catch (SQLException e) {
                     e.printStackTrace();
                 }
             }

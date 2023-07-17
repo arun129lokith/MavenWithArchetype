@@ -33,12 +33,12 @@ public class CommonView {
      * @return The choice of the user.
      */
     protected int getChoice() {
-        System.out.println("Enter Your Choice:");
+        printMessage("Enter Your Choice:");
 
         try {
-            return Integer.parseInt(scanner.nextLine());
-        } catch (final NumberFormatException message) {
-            System.out.println("Invalid Choice. Please Enter An Integer");
+            return Integer.parseInt(scanner.nextLine().trim());
+        } catch (NumberFormatException message) {
+            printMessage("Invalid Choice. Please Enter An Integer");
         }
 
         return getChoice();
@@ -52,7 +52,7 @@ public class CommonView {
      * @return True if exit the process, false otherwise.
      */
     protected boolean exitAccess() {
-        System.out.println(String.join(" ","Do You Want To Continue The Process Press 'Any Key Or",
+        printMessage(String.join(" ","Do You Want To Continue The Process Press 'Any Key Or",
                 "Word' Else Press 'N Key Or No Word' For Exit The Process\nEnter Your Message For Continue Or Exit:"));
 
         return validation.continueOrExit(scanner.nextLine());

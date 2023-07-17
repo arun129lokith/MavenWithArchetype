@@ -4,8 +4,7 @@ import com.instagram.controller.UserController;
 
 /**
  * <P>
- * Handles the validation of the user details.
- * </P>
+ * Handles the validation of the user details
  *
  * @author Arun
  * @version 1.0
@@ -26,10 +25,10 @@ public class CommonValidation {
 
     /**
      * <p>
-     * Gets a static instance object of the class.
+     * Gets the object of the class
      * </p>
      *
-     * @return The validation object.
+     * @return The validation object
      */
     public static CommonValidation getInstance() {
        return null == validation ? validation = new CommonValidation() : validation;
@@ -37,11 +36,11 @@ public class CommonValidation {
 
     /**
      * <p>
-     * Validates the username of the user.
+     * Validates the username of the user
      * </p>
      *
-     * @param userName The username of the user.
-     * @return True if username is valid, false otherwise.
+     * @param userName The username of the user
+     * @return True if username is valid, false otherwise
      */
     public boolean validateUserName(final String userName) {
         return userName.matches(USER_NAME_PATTERN);
@@ -49,11 +48,11 @@ public class CommonValidation {
 
     /**
      * <p>
-     * Validates the email of the user.
+     * Validates the email of the user
      * </p>
      *
-     * @param email The email of the user.
-     * @return True if email is valid, false otherwise.
+     * @param email The email of the user
+     * @return True if email is valid, false otherwise
      */
     public boolean validateEmail(final String email) {
         return email.matches(EMAIL_PATTERN);
@@ -61,11 +60,11 @@ public class CommonValidation {
 
     /**
      * <p>
-     * Validates the password of the user.
+     * Validates the password of the user
      * </p>
      *
-     * @param password The password of the user.
-     * @return True if password is valid, false otherwise.
+     * @param password The password of the user
+     * @return True if password is valid, false otherwise
      */
     public boolean validatePassword(final String password) {
         return password.matches(PASSWORD_PATTERN);
@@ -73,11 +72,11 @@ public class CommonValidation {
 
     /**
      * <p>
-     * Validates the mobile number of the user.
+     * Validates the mobile number of the user
      * </p>
      *
-     * @param mobileNumber The mobile number of yhe user.
-     * @return True if mobile number is valid, false otherwise.
+     * @param mobileNumber The mobile number of yhe user
+     * @return True if mobile number is valid, false otherwise
      */
     public boolean validateMobileNumber(final String mobileNumber) {
         return mobileNumber.matches(MOBILE_NUMBER_PATTERN);
@@ -85,10 +84,10 @@ public class CommonValidation {
 
     /**
      * <p>
-     * Goes to main menu of the application.
+     * Goes to main menu of the application
      * </p>
      *
-     * @param userInput The input of the user details.
+     * @param userInput The input of the user details
      */
     public boolean backToMenu(final String userInput) {
         return userInput.contains("!");
@@ -96,11 +95,11 @@ public class CommonValidation {
 
     /**
      * <p>
-     * Validates the user for exit.
+     * Validates the user for exit
      * </p>
      *
-     * @param exitChoice The exit choice of the user.
-     * @return True if exit choice condition is satisfied, false otherwise.
+     * @param exitChoice The exit choice of the user
+     * @return True if exit choice condition is satisfied, false otherwise
      */
     public boolean continueOrExit(final String exitChoice) {
         return "No".equalsIgnoreCase(exitChoice) || "N".equalsIgnoreCase(exitChoice);
@@ -108,11 +107,11 @@ public class CommonValidation {
 
     /**
      * <p>
-     * Validates the location of the post.
+     * Validates the location of the post
      * </p>
      *
-     * @param location Represents the location of the user.
-     * @return True if location is valid, false otherwise.
+     * @param location Represents the location of the user
+     * @return True if location is valid, false otherwise
      */
     public boolean isValidLocation(final String location) {
         return location.matches(LOCATION_PATTERN);
